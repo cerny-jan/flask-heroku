@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>honzacerny.net - Runkeeper Dashboard</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
+    <link rel="stylesheet" type="text/css" href="./static/lib/css//bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="./static/lib/css/dc.min.css">
+    <link rel="stylesheet" type="text/css" href="./static/lib/css/keen-dashboards.css" />
+    <link rel="stylesheet" type="text/css" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
+    <link rel="stylesheet" type="text/css" href="./static/css/custom.css" />
+</head>
+
+<body class="application">
+    {% include "navigation.html" %} {% include "analytics.html" %}
+
+    <div id="message-status" class="alert alert-dismissible" role="alert" style="display:none">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div id="message-text">
+        blabal
+      </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-8">
+                <div class="chart-wrapper">
+                    <div class="chart-title">
+                        Time Chart - brush to filter
+                        <div class="pull-right">
+                            <button id="resetTimeChart" type="button" class="btn btn-default btn-xs">reset</button>
+                            <select id="interval"></select>
+                        </div>
+                    </div>
+                    <div id="timeChartStage" class="chart-stage">
+                        <img class="loading" src="./static/img/loader.gif" alt="loading" width="70px" height="70px">
+                        <div id="timeChart"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="chart-wrapper">
+                    <div class="chart-title">
+                        Pie Chart - click to filter
+                    </div>
+                    <div class="chart-stage">
+                        <img class="loading" src="./static/img/loader.gif" alt="loading" width="70px" height="70px">
+                        <div id="pieChart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="chart-wrapper">
+                    <div class="chart-title">
+                        Map
+                        <div class="pull-right">
+                            Total distance: <span id="numberChart"></span>km
+                        </div>
+                    </div>
+                    <div class="chart-stage">
+                        <div id="map">
+                            <img class="loading" src="./static/img/loader.gif" alt="loading" width="70px" height="70px">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="overlay">
+            <img src="./static/img/loader.gif" alt="Loading" width="100px" height="100px"/>
+        </div>
+    </div>
+    <hr>
+    <p class="small text-muted">Built with &#9829; by <a href="https://keen.io">Keen IO</a></p>
+    </div>
+    <script type="text/javascript" src="./static/lib/js/jquery.min.js"></script>
+    <script type="text/javascript" src="./static/lib/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./static/lib/js/queue.js"></script>
+    <!-- <script type="text/javascript" src="./static/lib/js/keen.min.js"></script> -->
+    <script type="text/javascript" src="./static/lib/js/crossfilter.js"></script>
+    <script type="text/javascript" src="./static/lib/js/d3.min.js"></script>
+    <script type="text/javascript" src="./static/lib/js/dc.min.js"></script>
+    <script type="text/javascript" src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+    <script type="text/javascript" src="http://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <script type="text/javascript" src="./static/js/chart.js"></script>
+    <script type="text/javascript" src="./static/js/stravaUpdateStatus.js"></script>
+</body>
+
+</html>
