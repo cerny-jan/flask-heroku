@@ -3,12 +3,14 @@ from flask import Flask, render_template, request, jsonify, flash
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import urllib.parse as urlparse
+from flask_compress import Compress
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = os.environ['FLASK_SECRET']
+Compress(app)
 
 
 db_url = urlparse.urlparse(os.environ['DATABASE_URL'])
@@ -59,7 +61,7 @@ def activity_dashboard():
 @app.route('/api/rk/<userid>')
 def rk(userid):
     sql = """
-    SELECT id, date, gpx, latitude_median, longitude_median,  distance, type, user_id FROM activities where user_id = %s;
+    SELECT  date, gpx, latitude_median, longitude_median,  distance, type, user_id FROM activities where user_id = %s;
     """
     user_activities = []
     try:
