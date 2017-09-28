@@ -25,7 +25,6 @@ pyasn1==0.3.6
 pyasn1-modules==0.1.4
 python-dateutil==2.6.1
 pytz==2017.2
-query-string==0.0.0
 redis==2.10.6
 requests==2.18.4
 requests-oauthlib==0.8.0
