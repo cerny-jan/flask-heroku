@@ -3,6 +3,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import urllib.parse as urlparse
 from flask import flash
+import datetime
 
 # postgresql setup
 db_url = urlparse.urlparse(os.environ['DATABASE_URL'])
@@ -60,14 +61,16 @@ def get_users_latest_activity_date(user_id):
     return latest_activity_date
 
 
-def get_user_activities(userid):
+def get_user_activities(userid, date_start, date_end):
     sql = """
-    SELECT  date, gpx, latitude_median, longitude_median,  distance, type, user_id FROM activities where user_id = %s;
+    SELECT  date, gpx, latitude_median, longitude_median,  distance, type, user_id FROM activities WHERE user_id = %s AND date BETWEEN  %s AND  %s;
     """
     user_activities = []
+    print(date_start)
+    print(date_end)
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        cur.execute(sql, (userid,))
+        cur.execute(sql, (userid, date_start, date_end,))
         user_activities = cur.fetchall()
     except Exception as e:
         conn.rollback()

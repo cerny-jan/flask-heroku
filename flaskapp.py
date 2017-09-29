@@ -167,9 +167,12 @@ def taskstatus(task_id):
     return str(task.status)
 
 
-@app.route('/api/rk/<userid>')
+@app.route('/api/activities/<userid>')
 def rk(userid):
-    return jsonify(get_user_activities(userid))
+    date_start = request.args.get('date_start') if request.args.get('date_start') else '2017-01-01'
+    date_end = request.args.get('date_end') if request.args.get(
+        'date_end') else datetime.date.today().strftime('%Y-%m-%d')
+    return jsonify(get_user_activities(userid, date_start, date_end))
 
 
 @app.errorhandler(404)

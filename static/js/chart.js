@@ -7,7 +7,7 @@ function setCookie(cname, cvalue, exdays) {
 //------
 
 queue()
-    .defer(d3.json, "/api/rk/" + document.getElementById('current-user').getAttribute('data-user'))
+    .defer(d3.json, "/api/activities/" + document.getElementById('current-user').getAttribute('data-user'))
     .await(Graph);
 
 function Graph(error, recordsJson) {
