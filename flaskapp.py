@@ -74,6 +74,7 @@ def callback():
     token = strava_auth.fetch_token(
         token_url, client_secret=client_secret, authorization_response=request.url)
 
+    create_user_if_does_not_exit(token)
     access_token = token.get('access_token')
     user_id = token.get('athlete', {}).get('id')
     latest_activity_date = get_users_latest_activity_date(user_id)
