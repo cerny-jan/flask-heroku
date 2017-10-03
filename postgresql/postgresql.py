@@ -66,8 +66,6 @@ def get_user_activities(userid, date_start, date_end):
     SELECT  date, gpx, latitude_median, longitude_median,  distance, type, user_id FROM activities WHERE user_id = %s AND date BETWEEN  %s AND  %s;
     """
     user_activities = []
-    print(date_start)
-    print(date_end)
     try:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         cur.execute(sql, (userid, date_start, date_end,))

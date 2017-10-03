@@ -1,13 +1,25 @@
 function setCookie(cname, cvalue, exdays) {
     var d = new Date();
-    d.setTime(d.getTime() + (exdays*24*60*60*1000));
-    var expires = "expires="+ d.toUTCString();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    var expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
 //------
+$('#datepicker').daterangepicker({
+    startDate: moment().subtract(89, 'days'),
+    endDate: moment(),
+    opens: 'left',
+    ranges: {
+        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+        'Last 90 Days': [moment().subtract(89, 'days'), moment()],
+        'This Year': [moment().startOf('year'), moment()]
+    }
+});
+
+//------
 
 queue()
-    .defer(d3.json, "/api/activities/" + document.getElementById('current-user').getAttribute('data-user'))
+    .defer(d3.json, "/api/activities/" + document.getElementById('current-user').getAttribute('data-user') + "?date_start=" + moment().subtract(89, 'days').format('YYYY-MM-DD'))
     .await(Graph);
 
 function Graph(error, recordsJson) {
@@ -41,7 +53,7 @@ function Graph(error, recordsJson) {
     var typeDimension = ndx.dimension(function(d) {
         return d.type;
     });
-    var dateDim = ndx.dimension(function(d) {
+    window.dateDim = ndx.dimension(function(d) {
         return interval(dateFormat.parse(d.date));
     });
     var gpxDim = ndx.dimension(function(d) {
@@ -58,12 +70,20 @@ function Graph(error, recordsJson) {
     var allGroup = ndx.groupAll().reduceSum(function(d) {
         return d.distance;
     });
-    //min and max for X axis
+    //min and max for X axis - if date range is outside of available data, use min and max from picker to draw axis
     var getMinDate = function() {
-        return dateFormat.parse(dateDim.bottom(1)[0].date);
+        if (dateDim.bottom(1).length > 0) {
+            return dateFormat.parse(dateDim.bottom(1)[0].date);
+        } else {
+            return dateFormat.parse($('#datepicker').data('daterangepicker').startDate.format('YYYY-MM-DDT00:00:00') + 'Z');
+        }
     };
     var getMaxDate = function() {
-        return dateFormat.parse(dateDim.top(1)[0].date);
+      if (dateDim.bottom(1).length > 0) {
+          return dateFormat.parse(dateDim.top(1)[0].date);
+      } else {
+          return dateFormat.parse($('#datepicker').data('daterangepicker').endDate.format('YYYY-MM-DDT00:00:00') + 'Z');
+      }
     };
 
     var updateData = function(ndx, dimensions) {
@@ -84,11 +104,11 @@ function Graph(error, recordsJson) {
             .x(d3.time.scale().domain([interval.offset(getMinDate(), -1), interval.offset(getMaxDate(), 1)]))
             .xUnits(interval.range);
 
-            if (intervalString == 'Days' && timeChart.data()[0].values.length > 21) {
-                timeChart.xAxis().ticks(d3.time.week);
-            } else {
-               timeChart.xAxis().ticks(interval);
-            }
+        if (intervalString == 'Days' && timeChart.data()[0].values.length > 21) {
+            timeChart.xAxis().ticks(d3.time.week);
+        } else {
+            timeChart.xAxis().ticks(interval);
+        }
         drawHeatMap();
 
     };
@@ -213,7 +233,7 @@ function Graph(error, recordsJson) {
 
 
     // map definition
-    window.map = L.map('map',{
+    window.map = L.map('map', {
         fullscreenControl: true
     });
     var tiles = L.tileLayer('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png', {
@@ -234,13 +254,13 @@ function Graph(error, recordsJson) {
     //interval select
     document.getElementById('interval').addEventListener('change', function(e) {
         timeChartUpdate();
-        ga('send', 'event', 'Runkeeper Dashboard', 'Interval Change', e.target.value);
+        ga('send', 'event', 'Activity Dashboard', 'Interval Change', e.target.value);
     });
     //reset button
     document.getElementById('resetTimeChart').addEventListener('click', function() {
         resetAll(data);
         dc.renderAll();
-        ga('send', 'event', 'Runkeeper Dashboard', 'Charts Reset');
+        ga('send', 'event', 'Activity Dashboard', 'Charts Reset');
     });
     // map update when chart filtered
     var dcCharts = dc.chartRegistry.list();
@@ -254,23 +274,15 @@ function Graph(error, recordsJson) {
         timeChart
             .width(document.getElementById('timeChartStage').offsetWidth)
             .render();
-        ga('send', 'event', 'Runkeeper Dashboard', 'Window Resize');
+        ga('send', 'event', 'Activity Dashboard', 'Window Resize');
     });
 
     // bootstrap needs jQuery anyway
-    // select user
-    $('.dropdown-menu li a').on('click', function() {
+    // function to load new data from API (new user or new date range)
+    var getData = function(user_id, date_start, date_end) {
         $('#overlay').show();
-        if ($('.navbar-toggle').css('display') == 'block') {
-            $('.navbar-toggle').click();
-        }
-        var user_id = d3.select(this).attr('data-user');
-        var user = d3.select(this).text();
-        $('#current-user').attr('data-user', user_id);
-        $('#current-user').html(user + ' <span class="caret">');
-        setCookie('user',user_id,90);
         queue()
-            .defer(d3.json, "/api/rk/" + user_id)
+            .defer(d3.json, "/api/activities/" + user_id + '?date_start=' + date_start + '&date_end=' + date_end)
             .await(newUserData);
 
         function newUserData(error, recordsJson) {
@@ -280,5 +292,30 @@ function Graph(error, recordsJson) {
             dc.redrawAll();
             //drawHeatMap();
         }
+    };
+
+    // select user
+    $('.dropdown-menu li a').on('click', function() {
+        if ($('.navbar-toggle').css('display') == 'block') {
+            $('.navbar-toggle').click();
+        }
+        var user_id = d3.select(this).attr('data-user');
+        var user = d3.select(this).text();
+        $('#current-user').attr('data-user', user_id);
+        $('#current-user').html(user + ' <span class="caret">');
+        setCookie('user', user_id, 90);
+        var date_start = $('#datepicker').data('daterangepicker').startDate.format('YYYY-MM-DD');
+        var date_end = $('#datepicker').data('daterangepicker').endDate.format('YYYY-MM-DD');
+        getData(user_id, date_start, date_end);
+        ga('send', 'event', 'Activity Dashboard', 'User Changed - ' + user_id);
+    });
+
+    // change date range
+    $('#datepicker').on('apply.daterangepicker', function(ev, picker) {
+        var date_start = picker.startDate.format('YYYY-MM-DD');
+        var date_end = picker.endDate.format('YYYY-MM-DD');
+        var user_id = document.getElementById('current-user').getAttribute('data-user');
+        getData(user_id, date_start, date_end);
+        ga('send', 'event', 'Activity Dashboard', 'Date Range Changed');
     });
 }
