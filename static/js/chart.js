@@ -9,6 +9,9 @@ $('#datepicker').daterangepicker({
     startDate: moment().subtract(89, 'days'),
     endDate: moment(),
     opens: 'left',
+    locale: {
+            format: 'DD/MM/YYYY'
+        },
     ranges: {
         'Last 30 Days': [moment().subtract(29, 'days'), moment()],
         'Last 90 Days': [moment().subtract(89, 'days'), moment()],
