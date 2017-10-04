@@ -193,7 +193,7 @@ function Graph(error, recordsJson) {
             top: 20,
             left: 40,
             right: 30,
-            bottom: 40
+            bottom: 45
         })
         .dimension(dateDim)
         .group(volumeByIntervalGroup)

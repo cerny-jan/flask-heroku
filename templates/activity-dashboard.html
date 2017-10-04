@@ -4,13 +4,11 @@
 <head>
     <title>honzacerny.net - Activity Dashboard</title>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' />
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap/3/css/bootstrap.css" />
-    <link rel="stylesheet" type="text/css" href="./static/lib/css/dc.min.css">
-    <link rel="stylesheet" type="text/css" href="./static/lib/css/keen-dashboards.css" />
+    <link rel="stylesheet" type="text/css" href="./static/lib/css/dc.min.css"/>
     <link rel="stylesheet" type="text/css" href="./static/lib/css/leaflet.css" />
     <link href='//api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
     <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
-    <link rel="stylesheet" type="text/css" href="./static/css/custom.css" />
+    {% include "common_header.html" %}
 </head>
 
 <body class="application">
@@ -91,8 +89,7 @@
     <hr>
     <p class="small text-muted">Built with &#9829; by <a href="https://keen.io">Keen IO</a></p>
     </div>
-    <script type="text/javascript" src="./static/lib/js/jquery.min.js"></script>
-    <script type="text/javascript" src="./static/lib/js/bootstrap.min.js"></script>
+    {% include "common_footer.html" %}
     <script type="text/javascript" src="./static/lib/js/queue.js"></script>
     <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
