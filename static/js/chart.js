@@ -270,11 +270,14 @@ function Graph(error, recordsJson) {
         });
     }
     // update chart width on window resize
+    var originalWidth = window.innerWidth;
     window.addEventListener('resize', function(event) {
-        timeChart
-            .width(document.getElementById('timeChartStage').offsetWidth)
-            .render();
-        ga('send', 'event', 'Activity Dashboard', 'Window Resize');
+        if (this.innerWidth != originalWidth) {
+            timeChart
+                .width(document.getElementById('timeChartStage').offsetWidth)
+                .render();
+            ga('send', 'event', 'Activity Dashboard', 'Window Resize');
+        }
     });
 
     // bootstrap needs jQuery anyway
