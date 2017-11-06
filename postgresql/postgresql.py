@@ -63,7 +63,7 @@ def get_users_latest_activity_date(user_id):
 
 def get_user_activities(userid, date_start, date_end):
     sql = """
-    SELECT  date, gpx, latitude_median, longitude_median,  distance, type, user_id FROM activities WHERE user_id = %s AND date BETWEEN  %s AND  %s;
+    SELECT  date, gpx, latitude_median, longitude_median,  distance, type, user_id FROM activities WHERE user_id = %s AND to_date(date,'YYY-MM-DD') BETWEEN  %s AND  %s;
     """
     user_activities = []
     try:
