@@ -13,7 +13,7 @@ import logging
 project_id = os.getenv('DAN_PROJECT_ID')
 dataset_id = os.getenv('CALLRAIL_DATASET_ID')
 table_id = os.getenv('CALLRAIL_TABLE_ID')
-google_credentials = json.load(os.getenv('DAN_GOOGLE_CREDENTIALS'))
+google_credentials = json.loads(os.getenv('DAN_GOOGLE_CREDENTIALS'))
 
 logger = logging.getLogger('lemberglaw')
 logger.setLevel(logging.INFO)
