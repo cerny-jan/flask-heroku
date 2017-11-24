@@ -13,13 +13,14 @@ import logging
 project_id = os.getenv('DAN_PROJECT_ID')
 dataset_id = os.getenv('CALLRAIL_DATASET_ID')
 table_id = os.getenv('CALLRAIL_TABLE_ID')
-
+google_credentials = json.load(os.getenv('DAN_GOOGLE_CREDENTIALS'))
 
 logger = logging.getLogger('lemberglaw')
 logger.setLevel(logging.INFO)
 
 # Instantiates a google logging client
-logging_client = google_logging.Client(project=project_id)
+logging_client = google_logging.Client(
+    credentials=google_credentials, project=project_id)
 # setup logging to google stackdriver
 google_handler = CloudLoggingHandler(logging_client, name=table_id)
 logger.addHandler(google_handler)
@@ -97,7 +98,8 @@ if __name__ == '__main__':
     calls = get_calls('2017-11-02', '2017-11-02')
 
     # Instantiates a BigQuery client
-    bigquery_client = bigquery.Client(project=project_id)
+    bigquery_client = bigquery.Client(
+        credentials=google_credentials, project=project_id)
 
     stream_data(bigquery_client, dataset_id, table_id, calls)
 
