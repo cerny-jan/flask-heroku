@@ -7,17 +7,21 @@ from google.cloud import bigquery
 from google.cloud.bigquery import SchemaField
 from google.cloud import logging as google_logging
 from google.cloud.logging.handlers import CloudLoggingHandler
+from google.oauth2 import service_account
 import logging
 
 
 project_id = os.getenv('DAN_PROJECT_ID')
 dataset_id = os.getenv('CALLRAIL_DATASET_ID')
 table_id = os.getenv('CALLRAIL_TABLE_ID')
-google_credentials = json.loads(os.getenv('DAN_GOOGLE_CREDENTIALS'))
+service_account_info = json.loads(os.getenv('DAN_GOOGLE_CREDENTIALS'))
 
 logger = logging.getLogger('lemberglaw')
 logger.setLevel(logging.INFO)
 
+# create google credentials from service account info
+google_credentials = service_account.Credentials.from_service_account_info(
+            service_account_info)
 # Instantiates a google logging client
 logging_client = google_logging.Client(
     credentials=google_credentials, project=project_id)
@@ -95,7 +99,7 @@ if __name__ == '__main__':
     yesterday = date.today() - timedelta(1)
     yesterday_string = yesterday.strftime('%Y-%m-%d')
 
-    calls = get_calls('2017-11-02', '2017-11-02')
+    calls = get_calls('2017-11-03', '2017-11-03')
 
     # Instantiates a BigQuery client
     bigquery_client = bigquery.Client(
