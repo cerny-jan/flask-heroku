@@ -140,14 +140,16 @@ class CallRail:
                     errors = self.bigquery_client.create_rows(
                         table, json_data_chunk)
                     if not errors:
-                        self.logger.info('{} rows loaded into {}:{}'.format(
+                        self.logger.info('{} rows loaded into {}:{}.'.format(
                             len(json_data_chunk), dataset_id, bq_table_id))
                     else:
-                        self.logger.error('There was a error while loading data into {}:{}'.format(
+                        self.logger.error('There was a error while loading data into {}:{}.'.format(
                             dataset_id, bq_table_id))
                         # pprint(errors)
             except Exception as e:
                 self.logger.error(str(e))
+        else:
+            self.logger.warn('No data to load.')
 
     def __get_table_schema(self, bq_table_id):
         """ Private method to copy table schema
