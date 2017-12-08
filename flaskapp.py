@@ -12,8 +12,6 @@ from postgresql.postgresql import *
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = os.environ['FLASK_SECRET']
 Compress(app)
 
