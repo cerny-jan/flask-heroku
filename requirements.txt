@@ -37,3 +37,4 @@ Werkzeug==0.12.2
 zope.interface==4.4.3
 google-cloud-bigquery==0.28.0
 google-cloud-logging==1.4.0
+bingads==11.5.6
