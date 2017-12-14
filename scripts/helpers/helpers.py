@@ -3,6 +3,7 @@ from google.cloud.logging.handlers import CloudLoggingHandler
 from google.oauth2 import service_account
 from bingads.v11.reporting import *
 import logging
+import json
 
 
 
