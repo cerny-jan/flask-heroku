@@ -11,36 +11,46 @@ BING_CLIENT_STATE = os.getenv('BING_CLIENT_STATE')
 DATABASE_URL = os.getenv('DATABASE_URL')
 GOOGLE_SERVISE_ACCOUNT_INFO = os.getenv('DAN_GOOGLE_CREDENTIALS')
 GOOGLE_PROJECT_ID = os.getenv('DAN_PROJECT_ID')
-BQ_DATASET_ID = 'dev'
-BQ_TABLE_ID = 'Bing'
+BING_BQ_DATASET_ID = 'BingData'
+BING_BQ_TABLE_ID = 'Bing'
 
 
 if __name__ == '__main__':
-    logger = get_logger(BQ_TABLE_ID)
-    bing = Bing(logger, BING_CLIENT_ID, BING_DEVELOPER_TOKEN, BING_CLIENT_STATE, DATABASE_URL)
+
+    # Bing ETL
+    bing_logger = get_logger(
+        BING_BQ_DATASET_ID, GOOGLE_SERVISE_ACCOUNT_INFO, GOOGLE_PROJECT_ID)
+    bing = Bing(bing_logger, BING_CLIENT_ID, BING_DEVELOPER_TOKEN,
+                BING_CLIENT_STATE, DATABASE_URL)
     bing.authenticate()
 
     report_request = create_keyword_performance_report_request(
-        bing, get_bing_account_ids(bing), 'LastSixMonths')
+        bing, get_bing_account_ids(bing), 'Yesterday')
 
     reporting_download_parameters = ReportingDownloadParameters(
         report_request=report_request,
-        result_file_directory=os.path.join(os.path.dirname(__file__), 'downloads'),
+        result_file_directory=os.path.join(
+            os.path.dirname(__file__), 'downloads'),
         result_file_name='download.csv',
         overwrite_result_file=True,
         timeout_in_milliseconds=360000
     )
 
-    result_file_path = bing.reporting_service_manager.download_file(
-        reporting_download_parameters)
+    try:
+        result_file_path = bing.reporting_service_manager.download_file(
+            reporting_download_parameters)
 
-    if result_file_path:
-        logger.info('Downloaded result file.')
-        bq = BQ(logger, GOOGLE_SERVISE_ACCOUNT_INFO, GOOGLE_PROJECT_ID, BQ_DATASET_ID)
-        bq.load_data_from_file(BQ_TABLE_ID, result_file_path)
-        try:
-            os.remove(result_file_path)
-        except Exception as e:
-            logger.error(str(e))
-    else:
-        logger.warn('No result file.')
+        if result_file_path:
+            bing_logger.info('Downloaded result file.')
+            bq = BQ(bing_logger, GOOGLE_SERVISE_ACCOUNT_INFO,
+                    GOOGLE_PROJECT_ID, BING_BQ_DATASET_ID)
+            bq.load_data_from_file(BING_BQ_TABLE_ID, result_file_path)
+            try:
+                os.remove(result_file_path)
+                bing_logger.info('Removed result file.')
+            except Exception as e:
+                bing_logger.error(str(e))
+        else:
+            bing_logger.warn('No result file.')
+    except Exception as e:
+        bing_logger.error(str(e))

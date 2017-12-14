@@ -70,7 +70,7 @@ def create_keyword_performance_report_request(bing_client, account_ids, time_per
     report_request = bing_client.reporting_service.factory.create(
         'KeywordPerformanceReportRequest')
     report_request.Format = 'Csv'
-    report_request.ReturnOnlyCompleteData = True
+    report_request.ReturnOnlyCompleteData = False
     report_request.Aggregation = 'Daily'
     report_request.Language = 'English'
     report_request.ExcludeColumnHeaders = True
@@ -94,6 +94,7 @@ def create_keyword_performance_report_request(bing_client, account_ids, time_per
         'ArrayOfKeywordPerformanceReportColumn')
     report_columns.KeywordPerformanceReportColumn.append([
         'TimePeriod',
+        'AccountId',
         'AccountName',
         'CampaignId',
         'CampaignName',
