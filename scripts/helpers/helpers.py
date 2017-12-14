@@ -6,8 +6,6 @@ import logging
 import json
 
 
-
-
 def get_logger(logger_name, google_service_account_info=None, google_project_id=None):
     """ Helper method to get logger object, if no google details are provived it logs only to console
 
@@ -39,6 +37,10 @@ def get_logger(logger_name, google_service_account_info=None, google_project_id=
 
 
 def get_bing_account_ids(bing_client):
+    """ Helper method to to get all account ids that belong to a user authenticated via bing_client
+
+    bing_client: A Bing object from clients/bing
+    """
     user = bing_client.customer_service.GetUser(None).User
     predicates = {
         'Predicate': [
@@ -62,7 +64,8 @@ def get_bing_account_ids(bing_client):
 
 
 def create_keyword_performance_report_request(bing_client, account_ids, time_peried):
-    """
+    """ Helper method to create KeywordPerformanceReportRequest
+
     bing_client: A bing client class
     account_ids: An array of Bing acccount AccountIds
     time_peried: A string representing predefined time peried. Possible values are LastFourWeeks, LastMonth, LastSevenDays,
