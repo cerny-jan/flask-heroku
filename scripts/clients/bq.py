@@ -83,10 +83,10 @@ class BQ:
         json_data: An array of JSON objects representing the data to stream
         """
         stream_limit = 10000
-        table_ref = self.dataset_ref.table(bq_table_id)
-        table = self.bigquery_client.get_table(table_ref)
         if json_data:
             try:
+                table_ref = self.dataset_ref.table(bq_table_id)
+                table = self.bigquery_client.get_table(table_ref)
                 for i in range(0, len(json_data), stream_limit):
                     json_data_chunk = json_data[i:i + stream_limit]
                     errors = self.bigquery_client.create_rows(
