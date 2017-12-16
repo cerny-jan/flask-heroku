@@ -93,10 +93,10 @@ class BQ:
                         table, json_data_chunk)
                     if not errors:
                         self.logger.info('{} rows loaded into {}:{}.'.format(
-                            len(json_data_chunk), dataset_id, bq_table_id))
+                            len(json_data_chunk), self.dataset_id, bq_table_id))
                     else:
                         self.logger.error('There was a error while loading data into {}:{}.'.format(
-                            dataset_id, bq_table_id))
+                            self.dataset_id, bq_table_id))
                         # pprint(errors)
             except Exception as e:
                 self.logger.error(str(e))
