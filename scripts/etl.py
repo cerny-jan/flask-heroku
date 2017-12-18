@@ -15,12 +15,14 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 CALLRAIL_ACCOUNT_ID = os.getenv('CALLRAIL_ACCOUNT_ID')
 CALLRAIL_TOKEN = os.getenv('CALLRAIL_TOKEN')
 CALLRAIL_DATASET_ID = 'CallrailData'
+CALLRAIL_DATASET_ID = 'dev'
 CALLRAIL_DETAILS = json.loads(os.getenv('CALLRAIL_DETAILS'))
 
 BING_CLIENT_ID = os.getenv('BING_CLIENT_ID')
 BING_DEVELOPER_TOKEN = os.getenv('BING_DEVELOPER_TOKEN')
 BING_CLIENT_STATE = os.getenv('BING_CLIENT_STATE')
 BING_BQ_DATASET_ID = 'BingData'
+BING_BQ_DATASET_ID = 'dev'
 BING_BQ_TABLE_ID = 'Bing'
 
 
@@ -63,18 +65,34 @@ if __name__ == '__main__':
     )
 
     try:
-        result_file_path=bing.reporting_service_manager.download_file(
+        result_file_path = bing.reporting_service_manager.download_file(
             reporting_download_parameters)
         if result_file_path:
             bing_logger.info('Downloaded result file.')
-            bq=bq=BQ(bing_logger, GOOGLE_SERVISE_ACCOUNT_INFO,
-                    GOOGLE_PROJECT_ID, BING_BQ_DATASET_ID)
+            bq = BQ(bing_logger, GOOGLE_SERVISE_ACCOUNT_INFO,
+                         GOOGLE_PROJECT_ID, BING_BQ_DATASET_ID)
             bq.load_data_from_file(BING_BQ_TABLE_ID, result_file_path)
             try:
                 os.remove(result_file_path)
                 bing_logger.info('Removed result file.')
             except Exception as e:
                 bing_logger.error(str(e))
+                # creates/udpates aggregated campaign table
+                query = """
+                    SELECT
+                          campaign_id,
+                          campaign_name,
+                          SUM(CAST(impressions AS int64)) AS impressions
+                    FROM
+                      `{project}.{dataset}.{table}`
+                    GROUP BY
+                          1,
+                          2
+                    ORDER BY
+                          3 DESC
+                    """
+                bq.create_table_by_query(
+                    query, BING_BQ_TABLE_ID, 'BingCampaigns')
         else:
             bing_logger.warn('No result file.')
     except Exception as e:

@@ -15,11 +15,24 @@ class BQ:
         bq_dataset_id: A string representing Google BigQuery dataset ID that should be used
         """
 
-        self.logger = logger
-        self.dataset_id = bq_dataset_id
+        self.__logger = logger
+        self.__project_id = google_project_id
+        self.__dataset_id = bq_dataset_id
         self.__set_google_credentials(google_servise_account_info)
         self.__set_bigquery_client(google_project_id)
         self.__set_dataset_ref(bq_dataset_id)
+
+    @property
+    def logger(self):
+        return self.__logger
+
+    @property
+    def project_id(self):
+        return self.__project_id
+
+    @property
+    def dataset_id(self):
+        return self.__dataset_id
 
     def __set_google_credentials(self, google_service_account_info):
         """ Private method to set Google credentials
@@ -68,15 +81,16 @@ class BQ:
                 job = self.bigquery_client.load_table_from_file(
                     source_file, table_ref, job_config=job_config)
             job.result()  # Waits for job to complete
-            self.logger.info('Loaded {} rows into {}:{}.'.format(
-                job.output_rows, self.dataset_id, bq_table_id))
+            self.logger.info('Loaded {} row{} into {}:{}.'.format(
+                job.output_rows,'s' if job.output_rows > 1 else '', self.dataset_id, bq_table_id))
         except Exception as e:
             self.logger.error(str(e))
 
     def stream_data_to_bq(self, bq_table_id, json_data):
         """ Public method to stream JSON data to bigquery
 
-        Streamed data is available for real-time analysis within a few seconds of the first streaming insertion into a table. https://cloud.google.com/bigquery/streaming-data-into-bigquery
+        Streamed data is available for real-time analysis within a few seconds of the first
+        streaming insertion into a table. https://cloud.google.com/bigquery/streaming-data-into-bigquery
         There is a limit of 10k rows per request
 
         bq_table_id: A string representing the destination table
@@ -92,8 +106,9 @@ class BQ:
                     errors = self.bigquery_client.create_rows(
                         table, json_data_chunk)
                     if not errors:
-                        self.logger.info('{} rows loaded into {}:{}.'.format(
-                            len(json_data_chunk), self.dataset_id, bq_table_id))
+                        self.logger.info('Loaded {} row{} into {}:{}.'.format(
+                            len(json_data_chunk), 's' if len(json_data_chunk) > 1 else '',
+                            self.dataset_id, bq_table_id))
                     else:
                         self.logger.error('There was a error while loading data into {}:{}.'.format(
                             self.dataset_id, bq_table_id))
@@ -115,25 +130,25 @@ class BQ:
         except Exception as e:
             self.logger.error(str(e))
 
-    def create_empty_table_by_copy(self, old_table_id, new_table_id):
+    def create_empty_table_by_copy(self, source_table_id, dest_table_id):
         """ Public method to create a new empty table by copying the old none
         It copies the schema and creates an empty table from it in the same dataset
 
-        old_table_id: A string
-        new_table_id: A string
+        source_table_id: A string
+        dest_table_id: A string
         """
         try:
-            table_ref = self.dataset_ref.table(new_table_id)
+            table_ref = self.dataset_ref.table(dest_table_id)
             table = bigquery.Table(table_ref)
-            table.schema = self.__get_table_schema(old_table_id)
+            table.schema = self.__get_table_schema(source_table_id)
             table = self.bigquery_client.create_table(table)
             self.logger.info('Created table {}:{}.'.format(
-                self.dataset_id, new_table_id))
+                self.dataset_id, dest_table_id))
         except Exception as e:
             self.logger.error(str(e))
 
     def drop_table(self, bq_table_id):
-        """ Public method to drop the table
+        """ Public method to drop a table
 
         bq_table_id: A string representing the table to drop
         """
@@ -141,3 +156,28 @@ class BQ:
         self.bigquery_client.delete_table(table_ref)
         self.logger.info('Dropped table {}:{}.'.format(
             self.dataset_id, bq_table_id))
+
+    def create_table_by_query(self, query, source_table_id, dest_table_id):
+        """ Public method to create a table from query result
+
+        query: A string representing the query that will create new table,
+            clausule FROM has to use this format: `{project}.{dataset}.{table}`,
+            where all variables are automatically replaced by method;
+            project and dataset from BQ object, table by dest_table_id
+        source_table_id: A string
+        dest_table_id: A string
+        """
+        try:
+            query = query.format(project=self.project_id,
+                                 dataset=self.dataset_id, table=source_table_id)
+            job_config = bigquery.QueryJobConfig()
+            destination_table = self.dataset_ref.table(dest_table_id)
+            job_config.destination = destination_table
+            job_config.create_disposition = 'CREATE_IF_NEEDED'
+            job_config.write_disposition = 'WRITE_TRUNCATE'
+            job = self.bigquery_client.query(query, job_config=job_config)
+            job.result()
+            self.logger.info('Created table {}:{}'.format(
+                self.dataset_id, dest_table_id))
+        except Exception as e:
+            self.logger.error(str(e))

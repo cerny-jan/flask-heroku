@@ -51,8 +51,8 @@ class CallRail:
             r = requests.get(url, params=payload, headers=headers)
             response = r.json()
             if response['page'] == response['total_pages']:
-                self.logger.info('Calls for company ID: {} from {} to {} pulled from API. {} request{} needed.'.format(
-                    company_id, start_date, end_date, response['total_pages'], 's were' if response['total_pages'] > 1 else ' was'))
+                self.logger.info('Pulled calls from CallRail API for company ID: {}, date range:  {} to {}. Needed {} request{}.'.format(
+                    company_id, start_date, end_date, response['total_pages'], 's' if response['total_pages'] > 1 else ''))
             if response['page'] < response['total_pages']:
                 result = response['calls'] + self.get_calls_from_api(
                     start_date, end_date, company_id, page + 1)
