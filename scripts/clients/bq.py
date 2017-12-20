@@ -9,8 +9,8 @@ class BQ:
         """ Intialise BigQuery client
 
         logger: A logger object
-        google_servise_account_info:  A string of JSON object representing your Google service account private JSON key,
-            or path to the Google service account private JSON file
+        google_servise_account_info:  A string of JSON object representing your Google service
+                account private JSON key, or path to the Google service account private JSON file
         google_project_id: A string representing Google project ID that should be used
         bq_dataset_id: A string representing Google BigQuery dataset ID that should be used
         """
@@ -33,12 +33,12 @@ class BQ:
     @property
     def dataset_id(self):
         return self.__dataset_id
-
+        
     def __set_google_credentials(self, google_service_account_info):
         """ Private method to set Google credentials
 
-        google_service_account_info: A string of JSON object representing your Google service account private JSON key,
-            or path to the Google service account private JSON file
+        google_service_account_info: A string of JSON object representing your Google service
+        account private JSON key, or path to the Google service account private JSON file
         """
         if '.json' in google_service_account_info:
             google_credentials = service_account.Credentials.from_service_account_file(
@@ -82,7 +82,7 @@ class BQ:
                     source_file, table_ref, job_config=job_config)
             job.result()  # Waits for job to complete
             self.logger.info('Loaded {} row{} into {}:{}.'.format(
-                job.output_rows,'s' if job.output_rows > 1 else '', self.dataset_id, bq_table_id))
+                job.output_rows, 's' if job.output_rows > 1 else '', self.dataset_id, bq_table_id))
         except Exception as e:
             self.logger.error(str(e))
 
@@ -107,7 +107,8 @@ class BQ:
                         table, json_data_chunk)
                     if not errors:
                         self.logger.info('Loaded {} row{} into {}:{}.'.format(
-                            len(json_data_chunk), 's' if len(json_data_chunk) > 1 else '',
+                            len(json_data_chunk), 's' if len(
+                                json_data_chunk) > 1 else '',
                             self.dataset_id, bq_table_id))
                     else:
                         self.logger.error('There was a error while loading data into {}:{}.'.format(
@@ -134,8 +135,8 @@ class BQ:
         """ Public method to create a new empty table by copying the old none
         It copies the schema and creates an empty table from it in the same dataset
 
-        source_table_id: A string
-        dest_table_id: A string
+        source_table_id: A string representing a source table
+        dest_table_id: A string representing a destination table
         """
         try:
             table_ref = self.dataset_ref.table(dest_table_id)
@@ -160,12 +161,12 @@ class BQ:
     def create_table_by_query(self, query, source_table_id, dest_table_id):
         """ Public method to create a table from query result
 
-        query: A string representing the query that will create new table,
+        query: A string representing the query that will create new table;
             clausule FROM has to use this format: `{project}.{dataset}.{table}`,
-            where all variables are automatically replaced by method;
+            where all variables are automatically replaced in this method;
             project and dataset from BQ object, table by dest_table_id
-        source_table_id: A string
-        dest_table_id: A string
+        source_table_id: A string representing a source table
+        dest_table_id: A string representing a destination table
         """
         try:
             query = query.format(project=self.project_id,

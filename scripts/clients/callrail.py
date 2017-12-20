@@ -32,7 +32,8 @@ class CallRail:
         start_date: A string in format %Y-%m-%d
         end_date: A string in format %Y-%m-%d
         company_id: A string with company id (one account can have multiple companies in it)
-        page (optional): default is 1, API uses pagination and can't return more than 250 calls per request http://apidocs.callrail.com/#pagination
+        page (optional): default is 1, API uses pagination and can't return more than 250 calls
+        per request http://apidocs.callrail.com/#pagination
         """
         api_url = 'https://api.callrail.com/v2/a/'
         headers = {
