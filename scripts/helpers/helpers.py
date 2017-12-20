@@ -10,29 +10,31 @@ def get_logger(logger_name, google_service_account_info=None, google_project_id=
     """ Helper method to get logger object, if no google details are provived it logs only to console
 
     logger_name: A string representing logger name, this will propagete to stackdriver if google is used
-    google_servise_account_info (optional): A string of JSON object representing your Google service account private JSON key,
-        or path to the Google service account private JSON file
+    google_servise_account_info (optional): A string of JSON object representing your Google service
+        account private JSON key or path to the Google service account private JSON file
     google_project_id (optional): A string representing Google project ID that should be used
     """
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.INFO)
     if google_service_account_info:
-        if '.json' in google_service_account_info:
-            google_credentials = service_account.Credentials.from_service_account_file(
-                google_service_account_info)
-        else:
-            google_credentials = service_account.Credentials.from_service_account_info(
-                json.loads(google_service_account_info))
-        # Instantiates a google logging client
-        logging_client = google_logging.Client(
-            credentials=google_credentials, project=google_project_id)
-        # setup logging to google stackdriver
-        google_handler = CloudLoggingHandler(
-            logging_client, name=logger_name)
-        logger.addHandler(google_handler)
-    # setup logging to console
-    stream_handler = logging.StreamHandler()
-    logger.addHandler(stream_handler)
+        # setup logging to google stackdriver if not already there
+        if 'CloudLoggingHandler' not in str(logger.handlers):
+            if '.json' in google_service_account_info:
+                google_credentials = service_account.Credentials.from_service_account_file(
+                    google_service_account_info)
+            else:
+                google_credentials = service_account.Credentials.from_service_account_info(
+                    json.loads(google_service_account_info))
+            # Instantiates a google logging client
+            logging_client = google_logging.Client(
+                credentials=google_credentials, project=google_project_id)
+            google_handler = CloudLoggingHandler(
+                logging_client, name=logger_name)
+            logger.addHandler(google_handler)
+    # setup logging to console if not already there
+    if 'StreamHandler' not in str(logger.handlers):
+        stream_handler = logging.StreamHandler()
+        logger.addHandler(stream_handler)
     return logger
 
 
@@ -68,8 +70,9 @@ def create_keyword_performance_report_request(bing_client, account_ids, time_per
 
     bing_client: A bing client class
     account_ids: An array of Bing acccount AccountIds
-    time_peried: A string representing predefined time peried. Possible values are LastFourWeeks, LastMonth, LastSevenDays,
-                LastSixMonths, LastThreeMonths, LastWeek, LastYear, ThisMonth, ThisWeek, ThisYear, Today, Yesterday
+    time_peried: A string representing predefined time peried. Possible values are LastFourWeeks,
+        LastMonth, LastSevenDays, LastSixMonths, LastThreeMonths, LastWeek, LastYear, ThisMonth,
+        ThisWeek, ThisYear, Today, Yesterday
     """
     report_request = bing_client.reporting_service.factory.create(
         'KeywordPerformanceReportRequest')
@@ -81,7 +84,8 @@ def create_keyword_performance_report_request(bing_client, account_ids, time_per
     report_request.ExcludeReportFooter = True
     report_request.ExcludeReportHeader = True
 
-    # The scope of the report. Use this element to limit the report to include data for a combination of accounts, ad groups, and campaigns.
+    # The scope of the report. Use this element to limit the report to include data for 
+    # a combination of accounts, ad groups, and campaigns.
     scope = bing_client.reporting_service.factory.create(
         'AccountThroughAdGroupReportScope')
     scope.AccountIds = {'long': account_ids}
