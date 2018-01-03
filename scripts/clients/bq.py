@@ -33,7 +33,7 @@ class BQ:
     @property
     def dataset_id(self):
         return self.__dataset_id
-        
+
     def __set_google_credentials(self, google_service_account_info):
         """ Private method to set Google credentials
 
@@ -65,17 +65,18 @@ class BQ:
         dataset_ref = self.bigquery_client.dataset(bq_dataset_id)
         self.dataset_ref = dataset_ref
 
-    def load_data_from_file(self, bq_table_id, source_file_name):
+    def load_data_from_file(self, bq_table_id, source_file_path):
         """ Public method to load csv file to bigquery
 
         bq_table_id: A string representing the destination table
-        source_file_name: A string representing the name of the source CSV file
+        source_file_path: A string representing the full path of the source CSV file
         """
         table_ref = self.dataset_ref.table(bq_table_id)
         try:
-            with open(source_file_name, 'rb') as source_file:
+            with open(source_file_path, 'rb') as source_file:
                 job_config = bigquery.LoadJobConfig()
                 job_config.source_format = 'text/csv'
+                job_config.autodetect = True
                 job_config.max_bad_records = 0
                 job_config.ignore_unknown_values = True
                 job = self.bigquery_client.load_table_from_file(
