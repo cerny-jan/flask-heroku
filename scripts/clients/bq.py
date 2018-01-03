@@ -154,10 +154,13 @@ class BQ:
 
         bq_table_id: A string representing the table to drop
         """
-        table_ref = self.dataset_ref.table(bq_table_id)
-        self.bigquery_client.delete_table(table_ref)
-        self.logger.info('Dropped table {}:{}.'.format(
-            self.dataset_id, bq_table_id))
+        try:
+            table_ref = self.dataset_ref.table(bq_table_id)
+            self.bigquery_client.delete_table(table_ref)
+            self.logger.info('Dropped table {}:{}.'.format(
+                self.dataset_id, bq_table_id))
+        except Exception as e:
+            self.logger.error(str(e))
 
     def create_table_by_query(self, query, source_table_id, dest_table_id):
         """ Public method to create a table from query result
