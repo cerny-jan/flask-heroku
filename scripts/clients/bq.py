@@ -1,5 +1,6 @@
 from google.cloud import bigquery
 from google.oauth2 import service_account
+from google.api_core.exceptions import NotFound
 import json
 
 
@@ -159,6 +160,8 @@ class BQ:
             self.bigquery_client.delete_table(table_ref)
             self.logger.info('Dropped table {}:{}.'.format(
                 self.dataset_id, bq_table_id))
+        except NotFound:
+            self.logger.warn('Table not found')
         except Exception as e:
             self.logger.error(str(e))
 
