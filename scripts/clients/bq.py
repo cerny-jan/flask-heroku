@@ -2,6 +2,7 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 from google.api_core.exceptions import NotFound
 import json
+import io
 
 
 class BQ:
@@ -82,6 +83,29 @@ class BQ:
                 job_config.ignore_unknown_values = True
                 job = self.bigquery_client.load_table_from_file(
                     source_file, table_ref, job_config=job_config)
+            job.result()  # Waits for job to complete
+            self.logger.info('Loaded {} row{} into {}:{}.'.format(
+                job.output_rows, 's' if job.output_rows > 1 else '', self.dataset_id, bq_table_id))
+        except Exception as e:
+            self.logger.error(str(e))
+
+    def load_data_from_json(self, bq_table_id, source_data):
+        """ Public method to load in memory json data to bigquery
+
+        bq_table_id: A string representing the destination table
+        source_data: A list of dictionaries
+        """
+        table_ref = self.dataset_ref.table(bq_table_id)
+        try:
+            source_data = '\n'.join([json.dumps(x) for x in source_data])
+            source_file = io.StringIO(source_data)
+            job_config = bigquery.LoadJobConfig()
+            job_config.source_format = 'NEWLINE_DELIMITED_JSON'
+            job_config.autodetect = True
+            job_config.max_bad_records = 0
+            job_config.ignore_unknown_values = True
+            job = self.bigquery_client.load_table_from_file(
+                source_file, table_ref, job_config=job_config)
             job.result()  # Waits for job to complete
             self.logger.info('Loaded {} row{} into {}:{}.'.format(
                 job.output_rows, 's' if job.output_rows > 1 else '', self.dataset_id, bq_table_id))
