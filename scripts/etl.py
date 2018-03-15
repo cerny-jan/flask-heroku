@@ -75,27 +75,28 @@ if __name__ == '__main__':
             bq = BQ(bing_logger, GOOGLE_SERVISE_ACCOUNT_INFO,
                     GOOGLE_PROJECT_ID, BING_BQ_DATASET_ID)
             bq.load_data_from_file(BING_BQ_TABLE_ID, result_file_path)
+            # creates/udpates aggregated campaign table
+        query = """
+                SELECT
+                        campaign_id,
+                        campaign_name,
+                        SUM(CAST(impressions AS int64)) AS impressions
+                FROM
+                        `{project}.{dataset}.{table}`
+                GROUP BY
+                        1,
+                        2
+                ORDER BY
+                        3 DESC
+                """
+        bq.create_table_by_query(
+        query, BING_BQ_TABLE_ID, 'BingCampaigns')
+
             try:
                 os.remove(result_file_path)
                 bing_logger.info('Removed result file.')
             except Exception as e:
                 bing_logger.error(str(e))
-                # creates/udpates aggregated campaign table
-                query = """
-                    SELECT
-                          campaign_id,
-                          campaign_name,
-                          SUM(CAST(impressions AS int64)) AS impressions
-                    FROM
-                      `{project}.{dataset}.{table}`
-                    GROUP BY
-                          1,
-                          2
-                    ORDER BY
-                          3 DESC
-                    """
-                bq.create_table_by_query(
-                    query, BING_BQ_TABLE_ID, 'BingCampaigns')
         else:
             bing_logger.warn('No result file.')
     except Exception as e:
