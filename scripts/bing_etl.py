@@ -14,7 +14,7 @@ import pandas as pd
 from pandas.tseries.offsets import MonthEnd, MonthBegin
 
 
-GOOGLE_SERVISE_ACCOUNT_INFO = os.getenv('DAN_GOOGLE_CREDENTIALS')
+GOOGLE_SERVICE_ACCOUNT_INFO = os.getenv('DAN_GOOGLE_CREDENTIALS')
 GOOGLE_PROJECT_ID = os.getenv('DAN_PROJECT_ID')
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -27,7 +27,7 @@ BING_BQ_TABLE_ID = 'Bing'
 def run_bing(dataset_id, accounts, start_date, end_date):
 
     bing_logger = get_logger(
-        dataset_id, GOOGLE_SERVISE_ACCOUNT_INFO, GOOGLE_PROJECT_ID)
+        dataset_id, GOOGLE_SERVICE_ACCOUNT_INFO, GOOGLE_PROJECT_ID)
 
     bing = Bing(bing_logger, BING_CLIENT_ID, BING_DEVELOPER_TOKEN,
                 BING_CLIENT_STATE, DATABASE_URL)
@@ -54,7 +54,7 @@ def run_bing(dataset_id, accounts, start_date, end_date):
             reporting_download_parameters)
         if result_file_path:
             bing_logger.info('Downloaded result file.')
-            bq = BQ(bing_logger, GOOGLE_SERVISE_ACCOUNT_INFO,
+            bq = BQ(bing_logger, GOOGLE_SERVICE_ACCOUNT_INFO,
                     GOOGLE_PROJECT_ID, dataset_id)
             bq.load_data_from_file(BING_BQ_TABLE_ID, result_file_path, 1)
             try:
@@ -70,14 +70,14 @@ def run_bing(dataset_id, accounts, start_date, end_date):
 
 def create_agg_campaign_table(dataset_id):
     bing_logger = get_logger(
-        dataset_id, GOOGLE_SERVISE_ACCOUNT_INFO, GOOGLE_PROJECT_ID)
-    bq = BQ(bing_logger, GOOGLE_SERVISE_ACCOUNT_INFO,
+        dataset_id, GOOGLE_SERVICE_ACCOUNT_INFO, GOOGLE_PROJECT_ID)
+    bq = BQ(bing_logger, GOOGLE_SERVICE_ACCOUNT_INFO,
             GOOGLE_PROJECT_ID, dataset_id)
     query = """
             SELECT
-                    campaign_id,
-                    campaign_name,
-                    SUM(CAST(impressions AS int64)) AS impressions
+                    CampaignId,
+                    CampaignName,
+                    SUM(CAST(Impressions AS int64)) AS impressions
             FROM
                     `{project}.{dataset}.{table}`
             GROUP BY

@@ -80,7 +80,7 @@ def create_keyword_performance_report_request(bing_client, account_ids, start_da
     report_request.ReturnOnlyCompleteData = False
     report_request.Aggregation = 'Daily'
     report_request.Language = 'English'
-    report_request.ExcludeColumnHeaders = True
+    report_request.ExcludeColumnHeaders = False
     report_request.ExcludeReportFooter = True
     report_request.ExcludeReportHeader = True
 
