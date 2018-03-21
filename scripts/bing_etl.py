@@ -35,7 +35,7 @@ def run_bing(dataset_id, accounts, start_date, end_date):
     bing.authenticate()
 
     if not accounts:
-        get_bing_account_ids(bing)
+        accounts = get_bing_account_ids(bing)
 
     report_request = create_keyword_performance_report_request(
         bing, accounts, start_date, end_date)
