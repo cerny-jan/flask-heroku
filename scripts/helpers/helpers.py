@@ -65,7 +65,7 @@ def get_bing_account_ids(bing_client):
     return account_ids
 
 
-def create_keyword_performance_report_request(bing_client, account_ids, time_peried):
+def create_keyword_performance_report_request(bing_client, account_ids, start_date, end_date):
     """ Helper method to create KeywordPerformanceReportRequest
 
     bing_client: A bing client class
@@ -84,7 +84,7 @@ def create_keyword_performance_report_request(bing_client, account_ids, time_per
     report_request.ExcludeReportFooter = True
     report_request.ExcludeReportHeader = True
 
-    # The scope of the report. Use this element to limit the report to include data for 
+    # The scope of the report. Use this element to limit the report to include data for
     # a combination of accounts, ad groups, and campaigns.
     scope = bing_client.reporting_service.factory.create(
         'AccountThroughAdGroupReportScope')
@@ -93,8 +93,22 @@ def create_keyword_performance_report_request(bing_client, account_ids, time_per
     scope.AdGroups = None
     report_request.Scope = scope
 
+    # parse string-date
+    start_year, start_month, start_day = map(int, start_date.split('-'))
+    end_year, end_month, end_day = map(int, end_date.split('-'))
+
     report_time = bing_client.reporting_service.factory.create('ReportTime')
-    report_time.PredefinedTime = time_peried
+    custom_date_range_start = bing_client.reporting_service.factory.create('Date')
+    custom_date_range_start.Day = start_day
+    custom_date_range_start.Month = start_month
+    custom_date_range_start.Year = start_year
+    report_time.CustomDateRangeStart = custom_date_range_start
+    custom_date_range_end = bing_client.reporting_service.factory.create('Date')
+    custom_date_range_end.Day = end_day
+    custom_date_range_end.Month = end_month
+    custom_date_range_end.Year = end_year
+    report_time.CustomDateRangeEnd = custom_date_range_end
+    report_time.PredefinedTime = None
     report_request.Time = report_time
 
     # The list of attributes and performance statistics to include in the report.
@@ -124,4 +138,72 @@ def create_keyword_performance_report_request(bing_client, account_ids, time_per
     report_request.MaxRows = 500000
     bing_client.logger.info('Created KeywordPerformanceReportRequest with IDs: {} for timePeriod: {}.'.format(
         str(account_ids), time_peried))
+    return report_request
+
+
+def create_campaign_performance_report_request(bing_client, account_ids, start_date, end_date):
+    """ Helper method to create CampaignPerformanceReportRequest
+
+    bing_client: A bing client class
+    account_ids: An array of Bing acccount AccountIds
+    start_date: A string in format %Y-%m-%d
+    end_date: A string in format %Y-%m-%d
+    """
+    report_request = bing_client.reporting_service.factory.create(
+        'CampaignPerformanceReportRequest')
+    report_request.Format = 'Csv'
+    report_request.ReturnOnlyCompleteData = False
+    report_request.Aggregation = 'Daily'
+    report_request.Language = 'English'
+    report_request.ExcludeColumnHeaders = False
+    report_request.ExcludeReportFooter = True
+    report_request.ExcludeReportHeader = True
+
+    # The scope of the report. Use this element to limit the report to include data for
+    # a combination of accounts, ad groups, and campaigns.
+    scope = bing_client.reporting_service.factory.create(
+        'AccountThroughAdGroupReportScope')
+    scope.AccountIds = {'long': account_ids}
+    scope.Campaigns = None
+    scope.AdGroups = None
+    report_request.Scope = scope
+
+    # parse string-date
+    start_year, start_month, start_day = map(int, start_date.split('-'))
+    end_year, end_month, end_day = map(int, end_date.split('-'))
+
+    report_time = bing_client.reporting_service.factory.create('ReportTime')
+    custom_date_range_start = bing_client.reporting_service.factory.create('Date')
+    custom_date_range_start.Day = start_day
+    custom_date_range_start.Month = start_month
+    custom_date_range_start.Year = start_year
+    report_time.CustomDateRangeStart = custom_date_range_start
+    custom_date_range_end = bing_client.reporting_service.factory.create('Date')
+    custom_date_range_end.Day = end_day
+    custom_date_range_end.Month = end_month
+    custom_date_range_end.Year = end_year
+    report_time.CustomDateRangeEnd = custom_date_range_end
+    report_time.PredefinedTime = None
+    report_request.Time = report_time
+
+    # The list of attributes and performance statistics to include in the report.
+    report_columns = bing_client.reporting_service.factory.create(
+        'ArrayOfCampaignPerformanceReportColumn')
+    report_columns.CampaignPerformanceReportColumn.append([
+        'TimePeriod',
+        'DeviceType',
+        'AccountName',
+        'CampaignName',
+        'Impressions',
+        'Clicks',
+        'Spend',
+        'AveragePosition',
+        'Conversions',
+        'Revenue',
+        'AccountId',
+        'CampaignId'
+    ])
+    report_request.Columns = report_columns
+    bing_client.logger.info('Created CampaignPerformanceReportRequest with IDs: {} for timePeriod: {} - {}.'.format(
+        str(account_ids), start_date, end_date))
     return report_request

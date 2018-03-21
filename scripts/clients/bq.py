@@ -7,11 +7,11 @@ import io
 
 class BQ:
 
-    def __init__(self, logger, google_servise_account_info, google_project_id, bq_dataset_id):
+    def __init__(self, logger, google_service_account_info, google_project_id, bq_dataset_id):
         """ Intialise BigQuery client
 
         logger: A logger object
-        google_servise_account_info:  A string of JSON object representing your Google service
+        google_service_account_info:  A string of JSON object representing your Google service
                 account private JSON key, or path to the Google service account private JSON file
         google_project_id: A string representing Google project ID that should be used
         bq_dataset_id: A string representing Google BigQuery dataset ID that should be used
@@ -20,7 +20,7 @@ class BQ:
         self.__logger = logger
         self.__project_id = google_project_id
         self.__dataset_id = bq_dataset_id
-        self.__set_google_credentials(google_servise_account_info)
+        self.__set_google_credentials(google_service_account_info)
         self.__set_bigquery_client(google_project_id)
         self.__set_dataset_ref(bq_dataset_id)
 
@@ -67,11 +67,14 @@ class BQ:
         dataset_ref = self.bigquery_client.dataset(bq_dataset_id)
         self.dataset_ref = dataset_ref
 
-    def load_data_from_file(self, bq_table_id, source_file_path):
+    def load_data_from_file(self, bq_table_id, source_file_path, skip_leading_rows=0):
         """ Public method to load csv file to bigquery
 
         bq_table_id: A string representing the destination table
         source_file_path: A string representing the full path of the source CSV file
+        skip_leading_rows: A int, The number of rows at the top of a CSV file that
+            BigQuery will skip when loading the data. The default value is 0.
+            The header wil be user to determine the names for columns.
         """
         table_ref = self.dataset_ref.table(bq_table_id)
         try:
@@ -80,6 +83,7 @@ class BQ:
                 job_config.source_format = 'text/csv'
                 job_config.autodetect = True
                 job_config.max_bad_records = 0
+                job_config.skip_leading_rows = 1
                 job_config.ignore_unknown_values = True
                 job = self.bigquery_client.load_table_from_file(
                     source_file, table_ref, job_config=job_config)

@@ -4,7 +4,6 @@ from bingads.v11.reporting import *
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import urllib.parse as urlparse
-import os
 
 
 class Bing:
