@@ -1,8 +1,6 @@
-from helpers.helpers import get_logger, get_bing_account_ids, create_keyword_performance_report_request
-from clients.bing import Bing
+from helpers.helpers import get_logger
 from clients.bq import BQ
 from clients.callrail import CallRail
-from bingads.v11.reporting import *
 from datetime import date, timedelta
 import os
 import json
@@ -17,12 +15,6 @@ CALLRAIL_ACCOUNT_ID = os.getenv('CALLRAIL_ACCOUNT_ID')
 CALLRAIL_TOKEN = os.getenv('CALLRAIL_TOKEN')
 CALLRAIL_BQ_DATASET_ID = 'CallrailData'
 CALLRAIL_DETAILS = json.loads(os.getenv('CALLRAIL_DETAILS'))
-
-BING_CLIENT_ID = os.getenv('BING_CLIENT_ID')
-BING_DEVELOPER_TOKEN = os.getenv('BING_DEVELOPER_TOKEN')
-BING_CLIENT_STATE = os.getenv('BING_CLIENT_STATE')
-BING_BQ_DATASET_ID = 'BingData'
-BING_BQ_TABLE_ID = 'Bing'
 
 
 if __name__ == '__main__':
@@ -46,57 +38,3 @@ if __name__ == '__main__':
         data = callrail_client.get_calls_from_api(
             yesterday, yesterday, detail['company_id'])
         callrail_bq.stream_data_to_bq(detail['bq_table_id'], data)
-
-    # Bing ETL
-    bing_logger = get_logger(
-        BING_BQ_DATASET_ID, GOOGLE_SERVISE_ACCOUNT_INFO, GOOGLE_PROJECT_ID)
-
-    bing = Bing(bing_logger, BING_CLIENT_ID, BING_DEVELOPER_TOKEN,
-                BING_CLIENT_STATE, DATABASE_URL)
-    bing.authenticate()
-
-    report_request = create_keyword_performance_report_request(
-        bing, get_bing_account_ids(bing), 'Yesterday')
-
-    reporting_download_parameters = ReportingDownloadParameters(
-        report_request=report_request,
-        result_file_directory=os.path.join(
-            os.path.dirname(__file__), 'downloads'),
-        result_file_name='download.csv',
-        overwrite_result_file=True,
-        timeout_in_milliseconds=360000
-    )
-
-    try:
-        result_file_path = bing.reporting_service_manager.download_file(
-            reporting_download_parameters)
-        if result_file_path:
-            bing_logger.info('Downloaded result file.')
-            bq = BQ(bing_logger, GOOGLE_SERVISE_ACCOUNT_INFO,
-                    GOOGLE_PROJECT_ID, BING_BQ_DATASET_ID)
-            bq.load_data_from_file(BING_BQ_TABLE_ID, result_file_path)
-            # creates/udpates aggregated campaign table
-            query = """
-                    SELECT
-                            campaign_id,
-                            campaign_name,
-                            SUM(CAST(impressions AS int64)) AS impressions
-                    FROM
-                            `{project}.{dataset}.{table}`
-                    GROUP BY
-                            1,
-                            2
-                    ORDER BY
-                            3 DESC
-                    """
-            bq.create_table_by_query(
-            query, BING_BQ_TABLE_ID, 'BingCampaigns')
-            try:
-                os.remove(result_file_path)
-                bing_logger.info('Removed result file.')
-            except Exception as e:
-                bing_logger.error(str(e))
-        else:
-            bing_logger.warn('No result file.')
-    except Exception as e:
-        bing_logger.error(str(e))
