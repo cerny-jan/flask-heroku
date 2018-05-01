@@ -72,9 +72,9 @@ class BQ:
 
         bq_table_id: A string representing the destination table
         source_file_path: A string representing the full path of the source CSV file
-        skip_leading_rows: A int, The number of rows at the top of a CSV file that
+        skip_leading_rows: An int, The number of rows at the top of a CSV file that
             BigQuery will skip when loading the data. The default value is 0.
-            The header wil be user to determine the names for columns.
+            This property is useful if you have header rows in the file that should be skipped.
         """
         table_ref = self.dataset_ref.table(bq_table_id)
         try:
@@ -83,7 +83,7 @@ class BQ:
                 job_config.source_format = 'text/csv'
                 job_config.autodetect = True
                 job_config.max_bad_records = 0
-                job_config.skip_leading_rows = 1
+                job_config.skip_leading_rows = skip_leading_rows
                 job_config.ignore_unknown_values = True
                 job = self.bigquery_client.load_table_from_file(
                     source_file, table_ref, job_config=job_config)
@@ -93,11 +93,12 @@ class BQ:
         except Exception as e:
             self.logger.error(str(e))
 
-    def load_data_from_json(self, bq_table_id, source_data):
+    def load_data_from_json(self, bq_table_id, source_data, schema=None, truncate=False):
         """ Public method to load in memory json data to bigquery
 
         bq_table_id: A string representing the destination table
         source_data: A list of dictionaries
+        schema: A BigQuery table schema, default is None -> schema is autodetected
         """
         table_ref = self.dataset_ref.table(bq_table_id)
         try:
@@ -105,7 +106,13 @@ class BQ:
             source_file = io.StringIO(source_data)
             job_config = bigquery.LoadJobConfig()
             job_config.source_format = 'NEWLINE_DELIMITED_JSON'
-            job_config.autodetect = True
+            job_config.create_disposition = 'CREATE_IF_NEEDED'
+            job_config.write_disposition = 'WRITE_APPEND' if not truncate else 'WRITE_TRUNCATE'
+            if schema:
+                job_config.autodetect = False
+                job_config.schema = schema
+            else:
+                job_config.autodetect = True
             job_config.max_bad_records = 0
             job_config.ignore_unknown_values = True
             job = self.bigquery_client.load_table_from_file(
@@ -215,5 +222,16 @@ class BQ:
             job.result()
             self.logger.info('Created table {}:{}'.format(
                 self.dataset_id, dest_table_id))
+        except Exception as e:
+            self.logger.error(str(e))
+
+    def query_table(self, query, source_table_id):
+        try:
+            query = query.format(project=self.project_id,
+                                 dataset=self.dataset_id, table=source_table_id)
+            job_config = bigquery.QueryJobConfig()
+            job = self.bigquery_client.query(query, job_config=job_config)
+            return job.result()
+
         except Exception as e:
             self.logger.error(str(e))
