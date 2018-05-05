@@ -35,8 +35,12 @@ def run_callrail_calls(dataset_id, accounts, start_date, end_date, check_last_re
             latest_record_date = bq.query_table(
                 query, destination_table)
             if latest_record_date:
+                yesterday = datetime.date.today() - datetime.timedelta(1)
                 latest_record_date = latest_record_date.to_dataframe()
-                start_date = latest_record_date.loc[0, 'result']
+                latest_record_date = latest_record_date.loc[0, 'result']
+                if latest_record_date < yesterday:
+                    start_date = latest_record_date + datetime.timedelta(1)
+                    start_date = start_date.strftime('%Y-%m-%d')
 
         data = callrail_client.get_calls_from_api(
             start_date, end_date, account)
