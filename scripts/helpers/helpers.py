@@ -136,7 +136,7 @@ def create_keyword_performance_report_request(bing_client, account_ids, start_da
     ])
     report_request.Columns = report_columns
     report_request.MaxRows = 500000
-    bing_client.logger.info('Created CampaignPerformanceReportRequest with IDs: {} for timePeriod: {} - {}.'.format(
+    bing_client.logger.info('Created KeywordPerformanceReportRequest with IDs: {} for timePeriod: {} - {}.'.format(
         str(account_ids), start_date, end_date))
     return report_request
 

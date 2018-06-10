@@ -124,8 +124,7 @@ if __name__ == '__main__':
         '{company}_CALLRAIL_TOKEN'.format(company=args.company.upper()), None)
 
     CALLRAIL_TABLE_PREFIX = 'CALLS'
-    CALLRAIL_FORM_TABLE_PREFIX = 'FORMS_{company}_NEW'.format(
-        company=args.company.upper())
+    CALLRAIL_FORM_TABLE_PREFIX = 'FORMS_{company}_NEW'.format(company=args.company.upper())
 
     CALLRAIL_BQ_DATASET_ID = 'dev' if args.development else os.getenv(
         'CALLRAIL_BQ_DATASET_ID', 'CallrailData')
