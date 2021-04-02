@@ -28,7 +28,7 @@ rsa==3.4.2
 six==1.11.0
 urllib3==1.22
 vine==1.1.4
-Werkzeug==0.12.2
+Werkzeug==0.15.3
 zope.interface==4.4.3
 bingads==11.5.9
 google-cloud-bigquery==0.31.0
