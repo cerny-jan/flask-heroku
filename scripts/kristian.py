@@ -154,7 +154,10 @@ def clean_vypecky(vypecky):
 def save_data_to_gspread(filename, data):
     current_data = data
     try:
-        scope = ['https://spreadsheets.google.com/feeds']
+        scope = [
+            'https://www.googleapis.com/auth/spreadsheets',
+            'https://www.googleapis.com/auth/drive'
+        ]
         credentials = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(os.environ['GOOGLE_KEY']), scope)
         gc = gspread.authorize(credentials)
         sheet = gc.open(filename)
