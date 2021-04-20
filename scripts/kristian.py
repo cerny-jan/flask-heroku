@@ -154,7 +154,7 @@ def clean_vypecky(vypecky):
 def save_data_to_gspread(filename, data):
     current_data = data
     try:
-        credentials = os.environ['GOOGLE_KEY']
+        credentials = json.loads(os.environ['GOOGLE_KEY'])
         gc = gspread.service_account_from_dict(credentials)
         sheet = gc.open(filename)
         worksheet = sheet.worksheet('raw_data')
