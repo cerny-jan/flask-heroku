@@ -89,12 +89,12 @@ def get_data():
                     result['Veprove vypecky'] = ', '.join(
                         list(map(str.strip, sides)))
             if not result['Veprove vypecky']:
-                logger.warn('{} - Vypecky not found'.format(link))
+                logger.warning('{} - Vypecky not found'.format(link))
                 result['Veprove vypecky'] = 'Nemaj výpečky!'
             else:
                 logger.info('Vypecky found')
         else:
-            logger.warn('{} - Current menu not found'.format(link))
+            logger.warning('{} - Current menu not found'.format(link))
             result['Veprove vypecky'] = 'Menu pro dnešek nenalezeno'
         # weather API
         key = os.environ['WEATHER_API_KEY']
@@ -108,7 +108,7 @@ def get_data():
                 result['Pocasi'] = weather_API.json(
                 )['weather'][0]['description']
             else:
-                logger.warn('Weather: {}'.format(
+                logger.warning('Weather: {}'.format(
                     weather_API.json()['message']))
                 result['Pocasi'] = weather_API.json()['message']
         else:
@@ -154,12 +154,8 @@ def clean_vypecky(vypecky):
 def save_data_to_gspread(filename, data):
     current_data = data
     try:
-        scope = [
-            'https://www.googleapis.com/auth/spreadsheets',
-            'https://www.googleapis.com/auth/drive'
-        ]
-        credentials = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(os.environ['GOOGLE_KEY']), scope)
-        gc = gspread.authorize(credentials)
+        credentials = os.environ['GOOGLE_KEY']
+        gc = gspread.service_account_from_dict(credentials)
         sheet = gc.open(filename)
         worksheet = sheet.worksheet('raw_data')
         worksheed_header = worksheet.row_values(1)
